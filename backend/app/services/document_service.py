@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import get_settings
 from app.db.models import Document, DocumentChunk
+from app.services.blob_persistence import BlobPersistence
 from app.services.embedding_service import EmbeddingService
 from app.services.ocr_service import OCRService
 from app.services.vector_store import VectorStore
@@ -19,6 +20,7 @@ class DocumentService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.settings = get_settings()
+        self.blob_persistence = BlobPersistence()
         self.embedding_service = EmbeddingService()
         self.ocr_service = OCRService()
         self.vector_store = VectorStore()
@@ -112,6 +114,7 @@ class DocumentService:
 
         self.db.commit()
         self.db.refresh(document)
+        self.blob_persistence.sync_up()
         self._notify(progress_callback, "completed", "Document indexed", 1.0)
         return document
 
@@ -131,6 +134,7 @@ class DocumentService:
             file_path.unlink(missing_ok=True)
 
         self._rebuild_vector_index()
+        self.blob_persistence.sync_up()
 
     def _extract_text(self, file_path: Path, suffix: str) -> tuple[str, list[tuple[int | None, str]]]:
         if suffix == ".pdf":

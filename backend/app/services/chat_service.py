@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.config import get_settings
 from app.db.models import ChatMessage, ChatSession, DocumentChunk
 from app.schemas import SourceItem, StructuredAnswer
+from app.services.blob_persistence import BlobPersistence
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_client import LLMClientFactory
 from app.services.vector_store import VectorStore
@@ -34,6 +35,7 @@ class ChatService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.settings = get_settings()
+        self.blob_persistence = BlobPersistence()
         self.client = LLMClientFactory.create()
         self.embedding_service = EmbeddingService()
         self.vector_store = VectorStore()
@@ -43,6 +45,7 @@ class ChatService:
         self.db.add(session)
         self.db.commit()
         self.db.refresh(session)
+        self.blob_persistence.sync_up()
         return session
 
     def list_chats(self) -> list[ChatSession]:
@@ -59,6 +62,7 @@ class ChatService:
             raise ValueError("Chat session not found.")
         self.db.delete(chat)
         self.db.commit()
+        self.blob_persistence.sync_up()
 
     def get_chat(self, chat_id: int) -> ChatSession | None:
         return (
@@ -119,6 +123,7 @@ class ChatService:
         assistant_message = ChatMessage(chat_session_id=chat.id, role="assistant", content=answer)
         self.db.add(assistant_message)
         self.db.commit()
+        self.blob_persistence.sync_up()
 
         refreshed = self.get_chat(chat.id)
         return answer, structured_answer, sources, refreshed.messages if refreshed else [user_message, assistant_message]

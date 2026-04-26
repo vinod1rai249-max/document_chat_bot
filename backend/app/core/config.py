@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,6 +30,9 @@ class Settings(BaseSettings):
     ocr_min_text_length: int = Field(default=20)
     ocr_image_dpi: int = Field(default=120)
     tesseract_cmd: str = Field(default="")
+    persist_state_to_blob: bool = Field(default=False)
+    blob_state_prefix: str = Field(default="doc-chat-state")
+    blob_access: Literal["private", "public"] = Field(default="private")
     api_host: str = Field(default="127.0.0.1")
     api_port: int = Field(default=8000)
     streamlit_api_url: str = Field(default="http://127.0.0.1:8000")

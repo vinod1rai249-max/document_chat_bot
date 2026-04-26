@@ -6,10 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.core.config import get_settings
 from app.db.database import Base, engine
+from app.db.database import blob_persistence
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if blob_persistence.enabled:
+        blob_persistence.sync_down()
     Base.metadata.create_all(bind=engine)
     yield
 

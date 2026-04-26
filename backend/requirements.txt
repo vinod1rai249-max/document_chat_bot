@@ -9,3 +9,4 @@ httpx==0.28.1
 numpy==2.2.5
 PyPDF2==3.0.1
 python-dotenv==1.1.0
+vercel==0.2.1

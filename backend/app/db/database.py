@@ -2,9 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import get_settings
+from app.services.blob_persistence import BlobPersistence
 
 
 settings = get_settings()
+blob_persistence = BlobPersistence()
 
 engine = create_engine(
     settings.database_url,
@@ -15,6 +17,10 @@ Base = declarative_base()
 
 
 def get_db():
+    if blob_persistence.enabled:
+        engine.dispose()
+        blob_persistence.sync_down()
+
     db = SessionLocal()
     try:
         yield db
