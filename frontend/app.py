@@ -246,6 +246,10 @@ def api_delete(path: str) -> Any:
         st.stop()
 
 
+def use_async_indexing() -> bool:
+    return "vercel.app" not in API_URL
+
+
 def ensure_chat() -> int:
     if st.session_state.get("chat_id"):
         return st.session_state["chat_id"]
@@ -315,26 +319,38 @@ def render_sidebar() -> tuple[list[dict], list[dict]]:
             )
             for uploaded_file in uploaded_files or []
         ]
-        job = api_post("/api/documents/upload-async", files=files)
-        status_box = st.sidebar.status("Indexing documents...", expanded=True)
-        progress_placeholder = st.sidebar.empty()
-        while True:
-            status = api_get(f"/api/documents/upload-jobs/{job['job_id']}")
-            progress_value = max(0.0, min(float(status["progress"]), 1.0))
-            status_box.update(
-                label=f"Indexing documents... {int(progress_value * 100)}%",
-                state="running" if status["status"] not in {"completed", "failed"} else ("error" if status["status"] == "failed" else "complete"),
-                expanded=True,
-            )
-            progress_placeholder.progress(progress_value, text=status["message"])
+        if use_async_indexing():
+            job = api_post("/api/documents/upload-async", files=files)
+            status_box = st.sidebar.status("Indexing documents...", expanded=True)
+            progress_placeholder = st.sidebar.empty()
+            while True:
+                status = api_get(f"/api/documents/upload-jobs/{job['job_id']}")
+                progress_value = max(0.0, min(float(status["progress"]), 1.0))
+                status_box.update(
+                    label=f"Indexing documents... {int(progress_value * 100)}%",
+                    state="running" if status["status"] not in {"completed", "failed"} else ("error" if status["status"] == "failed" else "complete"),
+                    expanded=True,
+                )
+                progress_placeholder.progress(progress_value, text=status["message"])
 
-            if status["status"] == "completed":
-                st.sidebar.success(f"Indexed {status['documents_indexed']} document(s).")
-                break
-            if status["status"] == "failed":
-                st.sidebar.error(status["error"] or status["message"])
-                break
-            time.sleep(1.2)
+                if status["status"] == "completed":
+                    st.sidebar.success(f"Indexed {status['documents_indexed']} document(s).")
+                    break
+                if status["status"] == "failed":
+                    st.sidebar.error(status["error"] or status["message"])
+                    break
+                time.sleep(1.2)
+        else:
+            status_box = st.sidebar.status("Processing files on hosted backend...", expanded=True)
+            progress_placeholder = st.sidebar.empty()
+            progress_placeholder.progress(0.15, text="Uploading files to the API")
+            status_box.update(label="Uploading files...", state="running", expanded=True)
+            api_post("/api/documents/upload", files=files)
+            progress_placeholder.progress(0.75, text="Indexing and storing document chunks")
+            status_box.update(label="Indexing files...", state="running", expanded=True)
+            progress_placeholder.progress(1.0, text="Done")
+            status_box.update(label="Files indexed successfully", state="complete", expanded=True)
+            st.sidebar.success(f"Indexed {len(files)} document(s).")
         st.rerun()
 
     documents = api_get("/api/documents")
