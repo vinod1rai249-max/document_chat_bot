@@ -22,10 +22,10 @@ This app lets users:
 
 ## Architecture
 
-The current retrieval pipeline is not simple chunk-only RAG. It uses:
+The retrieval pipeline is not simple chunk-only RAG. It uses:
 
 - OCR-aware ingestion for scans, notes, and images
-- parent-child chunking for better recall and answer context
+- parent-child chunking for stronger recall and answer context
 - hybrid retrieval using vector plus lexical search
 - reranked parent contexts before answer generation
 - structured response formatting with evidence and uncertainty sections
@@ -34,21 +34,21 @@ The current retrieval pipeline is not simple chunk-only RAG. It uses:
 
 ```text
 .
-├── backend
+├── backend/
 │   ├── __init__.py
-│   └── app
+│   └── app/
 │       ├── __init__.py
-│       ├── api
+│       ├── api/
 │       │   ├── __init__.py
 │       │   └── routes.py
-│       ├── core
+│       ├── core/
 │       │   ├── __init__.py
 │       │   └── config.py
-│       ├── db
+│       ├── db/
 │       │   ├── __init__.py
 │       │   ├── database.py
 │       │   └── models.py
-│       ├── services
+│       ├── services/
 │       │   ├── __init__.py
 │       │   ├── chat_service.py
 │       │   ├── document_service.py
@@ -57,22 +57,24 @@ The current retrieval pipeline is not simple chunk-only RAG. It uses:
 │       │   ├── llm_client.py
 │       │   ├── ocr_service.py
 │       │   └── vector_store.py
-│       ├── utils
+│       ├── utils/
 │       │   ├── __init__.py
 │       │   └── text.py
 │       ├── main.py
 │       └── schemas.py
-├── frontend
+├── frontend/
 │   └── app.py
-├── tests
+├── tests/
 │   └── test_text_utils.py
 ├── .env.example
 ├── .gitignore
 ├── .python-version
+├── main.py
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-└── uv.lock
+├── uv.lock
+└── vercel.json
 ```
 
 ## Features
@@ -91,7 +93,7 @@ The current retrieval pipeline is not simple chunk-only RAG. It uses:
 - Delete actions for stored documents and chat sessions
 - Premium Streamlit UI styling
 
-## Storage
+## Runtime Storage
 
 The app stores runtime data under:
 
@@ -150,6 +152,58 @@ App URLs:
 - `DELETE /api/chats/{chat_id}`
 - `POST /api/chats/{chat_id}/ask`
 
+## Deployment Split
+
+This repo is best deployed as two separate services:
+
+### 1. FastAPI backend on Vercel
+
+The repo already includes:
+
+- `main.py` at the repo root exporting the FastAPI app
+- `vercel.json` pointing Vercel to that entrypoint
+
+For Vercel:
+
+1. Import the GitHub repo
+2. Let Vercel detect Python
+3. Set backend environment variables from `.env.example`
+4. Deploy the API
+
+Important:
+
+- Vercel is only for the backend API in this setup
+- SQLite and local FAISS storage are okay for testing, but not ideal for serious production workloads on serverless platforms
+
+### 2. Streamlit frontend on Streamlit Community Cloud
+
+For Streamlit Community Cloud:
+
+1. Create a new app from this GitHub repo
+2. Set the app file path to:
+
+```text
+frontend/app.py
+```
+
+3. Add frontend environment variables or secrets
+4. Set:
+
+```text
+STREAMLIT_API_URL=https://your-vercel-backend-url
+```
+
+This makes the Streamlit UI call the deployed FastAPI backend instead of localhost.
+
+## Recommended Hosted Setup Notes
+
+If you deploy the frontend and backend separately:
+
+- keep `STREAMLIT_API_URL` pointed at your backend URL
+- make sure CORS stays enabled on the backend
+- keep `.env` local and never commit it
+- prefer hosted databases/vector stores later if you move beyond MVP testing
+
 ## Testing
 
 Run the included test file:
@@ -175,12 +229,13 @@ Suggested manual verification:
 - `EMBEDDING_DIMENSION` must match the actual embedding model output dimension
 - `PARENT_CHUNK_SIZE`, `PARENT_CHUNK_OVERLAP`, `CHILD_CHUNK_SIZE`, and `CHILD_CHUNK_OVERLAP` control hierarchical retrieval behavior
 - `TESSERACT_CMD` is optional and only needed when using local Tesseract OCR on Windows
+- `STREAMLIT_API_URL` controls where the frontend sends API requests
 
 ## Git Safety
 
 - `.env` is ignored and is not committed
 - `.env.example` is included so the project can be configured safely on another machine
 
-## Current Cleanup Notes
+## Current Cleanup Note
 
-The local workspace still contains an untracked stub file named `main.py` in the repo root. It is not part of the committed GitHub project.
+The root-level `main.py` is now intentionally part of the project because it is used as the Vercel FastAPI entrypoint.
