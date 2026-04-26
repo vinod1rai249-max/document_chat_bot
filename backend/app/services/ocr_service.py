@@ -7,9 +7,9 @@ from pathlib import Path
 
 from openai import APIConnectionError, APIError, RateLimitError
 
-from backend.app.core.config import get_settings
-from backend.app.services.llm_client import LLMClientFactory
-from backend.app.utils.text import clean_text
+from app.core.config import get_settings
+from app.services.llm_client import LLMClientFactory
+from app.utils.text import clean_text
 
 try:
     import fitz  # type: ignore

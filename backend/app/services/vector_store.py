@@ -6,7 +6,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from backend.app.core.config import get_settings
+from app.core.config import get_settings
 
 
 class VectorStore:

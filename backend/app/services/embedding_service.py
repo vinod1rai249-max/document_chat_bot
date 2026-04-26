@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from backend.app.core.config import get_settings
-from backend.app.services.llm_client import LLMClientFactory
+from app.core.config import get_settings
+from app.services.llm_client import LLMClientFactory
 
 
 class EmbeddingService:

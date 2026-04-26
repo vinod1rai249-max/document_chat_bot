@@ -7,12 +7,12 @@ import time
 from openai import APIConnectionError, APIError, RateLimitError
 from sqlalchemy.orm import Session, selectinload
 
-from backend.app.core.config import get_settings
-from backend.app.db.models import ChatMessage, ChatSession, DocumentChunk
-from backend.app.schemas import SourceItem, StructuredAnswer
-from backend.app.services.embedding_service import EmbeddingService
-from backend.app.services.llm_client import LLMClientFactory
-from backend.app.services.vector_store import VectorStore
+from app.core.config import get_settings
+from app.db.models import ChatMessage, ChatSession, DocumentChunk
+from app.schemas import SourceItem, StructuredAnswer
+from app.services.embedding_service import EmbeddingService
+from app.services.llm_client import LLMClientFactory
+from app.services.vector_store import VectorStore
 
 
 SYSTEM_PROMPT = """You are a helpful document question-answering assistant.

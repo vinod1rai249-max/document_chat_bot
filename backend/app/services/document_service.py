@@ -7,12 +7,12 @@ from fastapi import HTTPException, UploadFile, status
 from PyPDF2 import PdfReader
 from sqlalchemy.orm import Session, selectinload
 
-from backend.app.core.config import get_settings
-from backend.app.db.models import Document, DocumentChunk
-from backend.app.services.embedding_service import EmbeddingService
-from backend.app.services.ocr_service import OCRService
-from backend.app.services.vector_store import VectorStore
-from backend.app.utils.text import chunk_text, clean_text
+from app.core.config import get_settings
+from app.db.models import Document, DocumentChunk
+from app.services.embedding_service import EmbeddingService
+from app.services.ocr_service import OCRService
+from app.services.vector_store import VectorStore
+from app.utils.text import chunk_text, clean_text
 
 
 class DocumentService:

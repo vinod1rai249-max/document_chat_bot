@@ -1,9 +1,9 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from backend.app.db.database import get_db
-from backend.app.db.database import SessionLocal
-from backend.app.schemas import (
+from app.db.database import get_db
+from app.db.database import SessionLocal
+from app.schemas import (
     AskRequest,
     AskResponse,
     ChatSessionCreate,
@@ -13,9 +13,9 @@ from backend.app.schemas import (
     IndexJobCreated,
     IndexJobStatus,
 )
-from backend.app.services.chat_service import ChatService
-from backend.app.services.document_service import DocumentService
-from backend.app.services.indexing_jobs import job_store
+from app.services.chat_service import ChatService
+from app.services.document_service import DocumentService
+from app.services.indexing_jobs import job_store
 
 
 router = APIRouter(prefix="/api")
