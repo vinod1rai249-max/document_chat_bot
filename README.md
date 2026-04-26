@@ -160,19 +160,27 @@ This repo is best deployed as two separate services:
 
 The repo already includes:
 
-- `main.py` at the repo root exporting the FastAPI app
-- `vercel.json` pointing Vercel to that entrypoint
+- `backend/main.py` exporting the FastAPI app for backend-only deployment
+- `backend/vercel.json` for Vercel backend routing
+- `backend/requirements.txt` with backend-only dependencies to keep the bundle smaller
 
 For Vercel:
 
 1. Import the GitHub repo
-2. Let Vercel detect Python
-3. Set backend environment variables from `.env.example`
-4. Deploy the API
+2. Set the **Root Directory** to:
+
+```text
+backend
+```
+
+3. Let Vercel detect Python
+4. Set backend environment variables from `.env.example`
+5. Deploy the API
 
 Important:
 
 - Vercel is only for the backend API in this setup
+- deploying from the repo root can bundle too many dependencies and exceed the Python function size limit
 - SQLite and local FAISS storage are okay for testing, but not ideal for serious production workloads on serverless platforms
 
 ### 2. Streamlit frontend on Streamlit Community Cloud

@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "main.py"
+    }
+  ],
+  "functions": {
+    "main.py": {
+      "excludeFiles": "{tests/**,__tests__/**,../tests/**,../frontend/**,../.venv/**,../.venv_old/**,../backend/storage/**,../**/*.md}"
+    }
+  }
+}
+
